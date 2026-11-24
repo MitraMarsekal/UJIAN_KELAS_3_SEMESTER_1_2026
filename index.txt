@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Ujian CAT Online Kelas 3 Semester 1</title>
+  <style>
+    :root {
+      --primary: #1a73e8;
+      --danger: #d93025;
+      --success: #188038;
+      --bg: #f4f6f9;
+      --card: #ffffff;
+      --text: #202124;
+    }
+    * { box-sizing: border-box; font-family: 'Segoe UI', Roboto, Arial, sans-serif; user-select: none; }
+    body { margin: 0; background: var(--bg); color: var(--text); }
+    
+    /* Login Screen */
+    .container-login {
+      max-width: 460px; margin: 40px auto; background: var(--card);
+      padding: 30px; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    }
+    h2 { margin-top: 0; color: var(--primary); text-align: center; }
+    .form-group { margin-bottom: 16px; }
+    label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 14px; }
+    input, select {
+      width: 100%; padding: 11px 12px; border: 1px solid #dadce0;
+      border-radius: 8px; font-size: 15px; outline: none;
+    }
+    input:focus, select:focus { border-color: var(--primary); }
+    .rules-box {
+      background: #fef7e0; border-left: 4px solid #f9ab00;
+      padding: 12px; font-size: 13px; border-radius: 6px; margin-bottom: 18px;
+    }
+    .btn {
+      width: 100%; padding: 13px; border: none; border-radius: 8px;
+      background: var(--primary); color: #fff; font-size: 16px;
+      font-weight: 600; cursor: pointer; transition: 0.2s;
+    }
+    .btn:hover { background: #1557b0; }
+    .btn:disabled { background: #9aa0a6; cursor: not-allowed; }
+
+    /* Exam Screen */
+    #exam-screen { display: none; height: 100vh; flex-direction: column; background: var(--bg); }
+    .topbar {
+      background: var(--primary); color: #fff; padding: 12px 24px;
+      display: flex; justify-content: space-between; align-items: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    }
+    .timer-badge {
+      background: #fff; color: var(--danger); font-weight: 700;
+      padding: 6px 16px; border-radius: 20px; font-size: 18px;
+    }
+    .exam-body {
+      display: flex; flex: 1; overflow: hidden; padding: 20px; gap: 20px;
+    }
+    .question-area {
+      flex: 3; background: var(--card); border-radius: 12px;
+      padding: 28px; overflow-y: auto; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      display: flex; flex-direction: column; justify-content: space-between;
+    }
+    .nav-area {
+      flex: 1; max-width: 300px; background: var(--card); border-radius: 12px;
+      padding: 20px; overflow-y: auto; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    .q-header { font-size: 15px; font-weight: 700; color: var(--primary); margin-bottom: 12px; }
+    .q-text { font-size: 18px; line-height: 1.6; margin-bottom: 24px; }
+    .option-item {
+      display: flex; align-items: center; padding: 12px 16px;
+      border: 1.5px solid #dadce0; border-radius: 8px; margin-bottom: 12px;
+      cursor: pointer; transition: 0.15s;
+    }
+    .option-item:hover { background: #f1f3f4; }
+    .option-item.selected { border-color: var(--primary); background: #e8f0fe; font-weight: 600; }
+    .option-badge {
+      width: 30px; height: 30px; border-radius: 50%; background: #e8eaed;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; margin-right: 14px; flex-shrink: 0;
+    }
+    .option-item.selected .option-badge { background: var(--primary); color: #fff; }
+    .nav-controls {
+      display: flex; justify-content: space-between; margin-top: 24px; padding-top: 16px;
+      border-top: 1px solid #eee;
+    }
+    .btn-nav { width: auto; padding: 10px 22px; font-size: 14px; }
+    .btn-secondary { background: #5f6368; }
+    .btn-finish { background: var(--success); }
+
+    /* Grid Nomor Soal */
+    .grid-nomor {
+      display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 12px;
+    }
+    .num-btn {
+      padding: 8px 0; border: 1px solid #dadce0; border-radius: 6px;
+      background: #fff; font-weight: 600; cursor: pointer; text-align: center;
+    }
+    .num-btn.active { border: 2px solid var(--primary); }
+    .num-btn.answered { background: var(--success); color: #fff; border-color: var(--success); }
+
+    /* Result Screen */
+    #result-screen {
+      display: none; max-width: 500px; margin: 60px auto; background: var(--card);
+      padding: 32px; border-radius: 12px; text-align: center;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    }
+    .score-circle {
+      width: 120px; height: 120px; border-radius: 50%; background: #e8f0fe;
+      color: var(--primary); font-size: 36px; font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
+      margin: 20px auto;
+    }
+    .cheat-alert {
+      background: #fce8e6; color: var(--danger); padding: 12px;
+      border-radius: 8px; font-weight: 700; margin-bottom: 16px;
+    }
+  </style>
+</head>
+<body oncontextmenu="return false;">
+
+  <!-- HALAMAN LOGIN -->
+  <div id="login-screen" class="container-login">
+    <h2>UJIAN CBT ONLINE</h2>
+    <div class="rules-box">
+      <strong>Perhatian Sebelum Mulai:</strong><br>
+      • Jumlah soal: <b>50 Butir</b> (Pilihan Ganda A–E)<br>
+      • Durasi pengerjaan: <b>60 Menit</b><br>
+      • Token hanya berlaku <b>1 kali pakai</b>.<br>
+      • Aplikasi otomatis masuk mode <b>Layar Penuh</b>. Keluar dari layar penuh atau pindah tab akan terdeteksi sebagai <b>KECURANGAN</b> dan ujian otomatis dihentikan!
+    </div>
+
+    <div class="form-group">
+      <label>Nama Lengkap Peserta</label>
+      <input type="text" id="nama" placeholder="Masukkan nama lengkap..." required>
+    </div>
+    <div class="form-group">
+      <label>ID / Nomor Peserta</label>
+      <input type="text" id="idPeserta" placeholder="Contoh: 03-001" required>
+    </div>
+    <div class="form-group">
+      <label>Mata Pelajaran</label>
+      <select id="mapel">
+        <option value="IPAS">IPAS</option>
+        <option value="Bahasa Sunda">Bahasa Sunda</option>
+        <option value="Matematika">Matematika</option>
+        <option value="Pancasila">Pancasila</option>
+        <option value="Seni Budaya">Seni Budaya</option>
+        <option value="PJOK">PJOK</option>
+        <option value="PABP">PABP</option>
+        <option value="Bahasa Inggris">Bahasa Inggris</option>
+        <option value="Bahasa Indonesia">Bahasa Indonesia</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Token Ujian (Sekali Pakai)</label>
+      <input type="text" id="tokenInput" placeholder="Masukkan token dari pengawas..." style="text-transform:uppercase;" required>
+    </div>
+
+    <button id="btn-start" class="btn" onclick="prosesMulai()">MASUK LAYAR PENUH & MULAI UJIAN</button>
+    <p id="login-msg" style="color:var(--danger); text-align:center; font-size:14px; margin-top:12px;"></p>
+  </div>
+
+  <!-- HALAMAN UJIAN -->
+  <div id="exam-screen">
+    <div class="topbar">
+      <div>
+        <strong id="disp-mapel" style="font-size:18px;">MATA PELAJARAN</strong><br>
+        <small id="disp-peserta">Peserta</small>
+      </div>
+      <div class="timer-badge" id="timer">60:00</div>
+    </div>
+
+    <div class="exam-body">
+      <div class="question-area">
+        <div>
+          <div class="q-header" id="q-number">Soal No. 1 dari 50</div>
+          <div class="q-text" id="q-text">Memuat pertanyaan...</div>
+          <div id="options-container"></div>
+        </div>
+
+        <div class="nav-controls">
+          <button class="btn btn-nav btn-secondary" id="btn-prev" onclick="gantiSoal(-1)">⬅ Sebelumnya</button>
+          <button class="btn btn-nav" id="btn-next" onclick="gantiSoal(1)">Selanjutnya ➡</button>
+          <button class="btn btn-nav btn-finish" id="btn-submit" style="display:none;" onclick="konfirmasiSelesai()">Selesai & Kumpulkan ✔</button>
+        </div>
+      </div>
+
+      <div class="nav-area">
+        <strong>Navigasi Soal</strong>
+        <div class="grid-nomor" id="grid-nomor"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HALAMAN HASIL -->
+  <div id="result-screen">
+    <h2>UJIAN SELESAI</h2>
+    <div id="cheat-banner" class="cheat-alert" style="display:none;">
+      ⚠️ TERDETEKSI KECURANGAN (Keluar dari Layar Penuh / Pindah Tab). Jawaban Anda otomatis dikunci dan dikirim!
+    </div>
+    <p id="res-identitas" style="font-weight:600;"></p>
+    <div class="score-circle" id="res-skor">0</div>
+    <p id="res-detail" style="font-size:16px;"></p>
+    <button class="btn" onclick="keluarLayarPenuh()" style="margin-top:16px; background:#5f6368;">Tutup Layar Penuh</button>
+  </div>
+
+  <script>
+    const API_URL = 'https://script.google.com/macros/s/AKfycbzefVOFKUYtrG8g3Jcs7FIG2RjijKzrNJzjr7q76AFyBppjByY0ESjR02umv1UWJOL8aA/exec';
+
+    let daftarSoal = [];
+    let currentIndex = 0;
+    let jawabanUser = {};
+    let timerInterval = null;
+    let sisaDetik = 60 * 60;
+    let ujianAktif = false;
+    let sudahSubmit = false;
+    let identitas = {};
+    let sessionId = null;
+
+    function panggilApi(action, payloadObj) {
+      // Gunakan google.script.run jika dibuka langsung dari Google Apps Script Web App
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        return new Promise((resolve, reject) => {
+          google.script.run
+            .withSuccessHandler(resolve)
+            .withFailureHandler(err => reject(new Error(err.message || err)))
+            [action](payloadObj);
+        });
+      }
+
+      // Fallback menggunakan fetch jika di-host di luar Apps Script (misalnya GitHub Pages)
+      if (!API_URL || API_URL === 'ISI_URL_WEB_APP_ANDA') {
+        return Promise.reject(new Error('Variabel API_URL di CBT.html belum diisi.'));
+      }
+
+      return fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: action, payload: payloadObj })
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('HTTP ' + response.status);
+        }
+        return response.json();
+      });
+    }
+
+    function masukLayarPenuh() {
+      const elem = document.documentElement;
+      if (elem.requestFullscreen) {
+        return elem.requestFullscreen().catch(() => {});
+      } else if (elem.webkitRequestFullscreen) {
+        return elem.webkitRequestFullscreen();
+      } else if (elem.msRequestFullscreen) {
+        return elem.msRequestFullscreen();
+      }
+      return Promise.resolve();
+    }
+
+    function keluarLayarPenuh() {
+      if (document.fullscreenElement) {
+        document.exitFullscreen().catch(() => {});
+      }
+    }
+
+    function prosesMulai() {
+      const nama = document.getElementById('nama').value.trim();
+      const idPeserta = document.getElementById('idPeserta').value.trim();
+      const mapel = document.getElementById('mapel').value;
+      const tokenInput = document.getElementById('tokenInput').value.trim();
+      const msg = document.getElementById('login-msg');
+
+      if (!nama || !idPeserta || !tokenInput) {
+        msg.textContent = 'Harap lengkapi Nama, ID Peserta, dan Token!';
+        return;
+      }
+
+      const btn = document.getElementById('btn-start');
+      btn.disabled = true;
+      btn.textContent = 'Memvalidasi Token & Memuat Soal...';
+      msg.textContent = '';
+
+      identitas = { nama, idPeserta, mapel };
+
+      masukLayarPenuh().then(() => {
+        panggilApi('mulaiUjian', { nama, idPeserta, mapel, tokenInput })
+          .then(function(res) {
+            if (!res.success) {
+              btn.disabled = false;
+              btn.textContent = 'MASUK LAYAR PENUH & MULAI UJIAN';
+              msg.textContent = res.message;
+              keluarLayarPenuh();
+              return;
+            }
+
+            sessionId = res.sessionId || null;
+            daftarSoal = res.soal;
+            sisaDetik = (res.durasiMenit || 60) * 60;
+            ujianAktif = true;
+
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('exam-screen').style.display = 'flex';
+            document.getElementById('disp-mapel').textContent = 'UJIAN ' + mapel.toUpperCase() + ' (PAKET ' + (res.paket || 'A') + ')';
+            document.getElementById('disp-peserta').textContent = `${nama} (${idPeserta})`;
+
+            buatGridNomor();
+            tampilkanSoal(0);
+            mulaiTimer();
+            aktifkanDeteksiKecurangan();
+          })
+          .catch(function(err) {
+            btn.disabled = false;
+            btn.textContent = 'MASUK LAYAR PENUH & MULAI UJIAN';
+            msg.textContent = 'Terjadi kesalahan koneksi: ' + err.message;
+            keluarLayarPenuh();
+          });
+      });
+    }
+
+    function buatGridNomor() {
+      const grid = document.getElementById('grid-nomor');
+      grid.innerHTML = '';
+      daftarSoal.forEach((s, idx) => {
+        const btn = document.createElement('div');
+        btn.className = 'num-btn';
+        btn.id = 'nav-num-' + idx;
+        btn.textContent = s.no;
+        btn.onclick = () => tampilkanSoal(idx);
+        grid.appendChild(btn);
+      });
+    }
+
+    function tampilkanSoal(index) {
+      currentIndex = index;
+      const soal = daftarSoal[index];
+      document.getElementById('q-number').textContent = `Soal No. ${soal.no} dari ${daftarSoal.length}`;
+      document.getElementById('q-text').textContent = soal.pertanyaan;
+
+      const optContainer = document.getElementById('options-container');
+      optContainer.innerHTML = '';
+
+      ['A', 'B', 'C', 'D', 'E'].forEach(huruf => {
+        const div = document.createElement('div');
+        div.className = 'option-item' + (jawabanUser[soal.id] === huruf ? ' selected' : '');
+        div.innerHTML = `<div class="option-badge">${huruf}</div><div>${soal.opsi[huruf] || '-'}</div>`;
+        div.onclick = () => pilihJawaban(soal.id, huruf);
+        optContainer.appendChild(div);
+      });
+
+      document.getElementById('btn-prev').disabled = (index === 0);
+      if (index === daftarSoal.length - 1) {
+        document.getElementById('btn-next').style.display = 'none';
+        document.getElementById('btn-submit').style.display = 'inline-block';
+      } else {
+        document.getElementById('btn-next').style.display = 'inline-block';
+        document.getElementById('btn-submit').style.display = 'none';
+      }
+
+      document.querySelectorAll('.num-btn').forEach(el => el.classList.remove('active'));
+      document.getElementById('nav-num-' + index).classList.add('active');
+    }
+
+    function pilihJawaban(idSoal, huruf) {
+      jawabanUser[idSoal] = huruf;
+      document.getElementById('nav-num-' + currentIndex).classList.add('answered');
+      tampilkanSoal(currentIndex);
+    }
+
+    function gantiSoal(arah) {
+      const target = currentIndex + arah;
+      if (target >= 0 && target < daftarSoal.length) {
+        tampilkanSoal(target);
+      }
+    }
+
+    function mulaiTimer() {
+      timerInterval = setInterval(() => {
+        sisaDetik--;
+        const menit = Math.floor(sisaDetik / 60);
+        const detik = sisaDetik % 60;
+        document.getElementById('timer').textContent =
+          String(menit).padStart(2, '0') + ':' + String(detik).padStart(2, '0');
+
+        if (sisaDetik <= 0) {
+          clearInterval(timerInterval);
+          kirimKeServer('Selesai (Waktu Habis)', false);
+        }
+      }, 1000);
+    }
+
+    function aktifkanDeteksiKecurangan() {
+      document.addEventListener('fullscreenchange', () => {
+        if (ujianAktif && !sudahSubmit && !document.fullscreenElement) {
+          eksekusiKecurangan('CURANG (Keluar Layar Penuh)');
+        }
+      });
+
+      document.addEventListener('visibilitychange', () => {
+        if (ujianAktif && !sudahSubmit && document.hidden) {
+          eksekusiKecurangan('CURANG (Pindah Tab / Aplikasi)');
+        }
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if (ujianAktif && (e.key === 'F12' || (e.ctrlKey && ['c','v','u','s','p'].includes(e.key.toLowerCase())))) {
+          e.preventDefault();
+        }
+      });
+    }
+
+    function eksekusiKecurangan(alasan) {
+      if (sudahSubmit) return;
+      ujianAktif = false;
+      clearInterval(timerInterval);
+      kirimKeServer(alasan, true);
+    }
+
+    function konfirmasiSelesai() {
+      const terjawab = Object.keys(jawabanUser).length;
+      if (confirm(`Anda telah menjawab ${terjawab} dari ${daftarSoal.length} soal. Yakin ingin mengumpulkan?`)) {
+        kirimKeServer('Selesai Normal', false);
+      }
+    }
+
+    function kirimKeServer(statusUjian, isCheat) {
+      if (sudahSubmit) return;
+      sudahSubmit = true;
+      ujianAktif = false;
+      clearInterval(timerInterval);
+
+      document.getElementById('exam-screen').style.display = 'none';
+      document.getElementById('result-screen').style.display = 'block';
+      document.getElementById('res-detail').textContent = 'Menyimpan dan menghitung nilai...';
+
+      if (isCheat) {
+        document.getElementById('cheat-banner').style.display = 'block';
+      }
+
+      const kunciMap = {};
+      daftarSoal.forEach(s => {
+        if (s.kunciAcak) kunciMap[s.id] = s.kunciAcak;
+      });
+
+      panggilApi('kirimJawaban', {
+        sessionId: sessionId,
+        nama: identitas.nama,
+        idPeserta: identitas.idPeserta,
+        mapel: identitas.mapel,
+        jawabanUser: jawabanUser,
+        statusUjian: statusUjian,
+        kunciMap: kunciMap,
+        totalSoalDikirim: daftarSoal.length
+      })
+      .then(function(res) {
+        if (!res.success) {
+          document.getElementById('res-detail').textContent = 'Gagal menyimpan hasil: ' + (res.message || 'Kesalahan server');
+          return;
+        }
+        document.getElementById('res-identitas').textContent =
+          `${identitas.nama} (${identitas.idPeserta}) - ${identitas.mapel}`;
+        document.getElementById('res-skor').textContent = res.skor;
+        document.getElementById('res-detail').innerHTML =
+          `Jawaban Benar: <b>${res.benar}</b> dari <b>${res.totalSoal}</b> soal<br>Status: <b>${res.statusUjian}</b>`;
+      })
+      .catch(function(err) {
+        document.getElementById('res-detail').textContent = 'Gagal terhubung ke server: ' + err.message;
+      });
+    }
+  </script>
+</body>
+</html>
